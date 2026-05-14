@@ -203,20 +203,6 @@ gs://weatherbench2/datasets/hres_t0/2016-2022-6h-240x121_equiangular_with_poles_
 
 Mosaic operates at 1.5° (~166 km), which cannot resolve mesoscale phenomena such as tropical-cyclone inner-core structure or individual severe thunderstorms. The block-sparse attention is designed to scale linearly with sequence length, so finer grids (e.g. 0.25°, ~700k tokens) are a natural next step but are not part of this release.
 
-## Citation
-
-If you use Mosaic, please cite:
-
-```bibtex
-@inproceedings{zhdanov2026mosaic,
-  title     = {(Sparse) Attention to the Details: Preserving Spectral Fidelity in ML-based Weather Forecasting Models},
-  author    = {Zhdanov, Maksim and Lucic, Ana and Welling, Max and van de Meent, Jan-Willem},
-  booktitle = {Proceedings of the 43rd International Conference on Machine Learning (ICML)},
-  year      = {2026},
-  url       = {https://arxiv.org/abs/2604.16429}
-}
-```
-
 ## License
 
 Released under [CC-BY-NC-4.0](https://creativecommons.org/licenses/by-nc/4.0/). Free for non-commercial research and educational use with attribution; commercial use requires a separate license. Underlying training data (ERA5, HRES) is subject to its own licensing terms set by ECMWF.
@@ -232,3 +218,17 @@ MZ acknowledges support from Microsoft Research AI4Science. JWvdM acknowledges s
 | License       | [`cc-by-nc-4.0`](https://creativecommons.org/licenses/by-nc/4.0/) |
 | Library       | `pytorch` |
 | Tags          | `weather` · `weather-forecasting` · `climate` · `atmospheric-science` · `sparse-attention` · `transformer` · `probabilistic-forecasting` |
+
+## Citation
+
+If you use Mosaic, please cite:
+
+```bibtex
+@inproceedings{zhdanov2026mosaic,
+  title     = {(Sparse) Attention to the Details: Preserving Spectral Fidelity in ML-based Weather Forecasting Models},
+  author    = {Zhdanov, Maksim and Lucic, Ana and Welling, Max and van de Meent, Jan-Willem},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning (ICML)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2604.16429}
+}
+```
