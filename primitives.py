@@ -1,8 +1,9 @@
 """
-Primitive building blocks for Native Block Sparse Attention (NBSA).
+Primitive building blocks for the Mosaic transformer.
 
 Components:
-- Block sparse attention with learned strategy weighting
+- Block-sparse attention with learned strategy weighting (local block, compressed,
+  and top-k selection branches combined with a learned gate)
 - Rotary positional embeddings (RoPE) for 2D lon/lat
 - Cross-attention interpolation between grids
 - HEALPix spatial up/downsampling
@@ -21,7 +22,7 @@ except ImportError:
     flash_attn_func = fa.flash_attn_func
 
 from utils import get_healpix_grid, get_neighbors, rad_to_xyz
-from ops import native_block_sparse_attention
+from ops import mosaic_sparse_attn
 
 
 def block_attention(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, block_size: int):
@@ -50,7 +51,7 @@ def attn_topk(q: torch.Tensor, k: torch.Tensor, block_count: int):
     return top_indices
 
 
-def nbsa_func(
+def mosaic_attn_func(
     q, k, v,
     weight_ba_cmp_slc,
     block_attn_size, sparse_block_size, sparse_block_count,
@@ -66,7 +67,7 @@ def nbsa_func(
 
     if no_compression:
         block_indices = attn_topk(q_cmp, k_cmp, sparse_block_count)
-        o_slc = native_block_sparse_attention(q, k, v, block_indices, sparse_block_size)
+        o_slc = mosaic_sparse_attn(q, k, v, block_indices, sparse_block_size)
         w_ba = weight_ba_cmp_slc[0]
         w_slc = weight_ba_cmp_slc[2]
         w_sum = w_ba + w_slc + 1e-8
@@ -83,7 +84,7 @@ def nbsa_func(
         return o_ba * (w_ba / w_sum) + o_cmp * (w_cmp / w_sum)
 
     block_indices = attn_topk(q_cmp, k_cmp, sparse_block_count)
-    o_slc = native_block_sparse_attention(q, k, v, block_indices, sparse_block_size)
+    o_slc = mosaic_sparse_attn(q, k, v, block_indices, sparse_block_size)
 
     return o_ba * weight_ba_cmp_slc[0] + o_cmp * weight_ba_cmp_slc[1] + o_slc * weight_ba_cmp_slc[2]
 
@@ -134,7 +135,7 @@ class RoPE(nn.Module):
         return (x.float() * cos + self.rotate_half(x.float()) * sin).to(x.dtype)
 
 
-class NativeBlockSparseAttention(nn.Module):
+class MosaicAttention(nn.Module):
     def __init__(self, config, block_attn_only: bool, no_compression: bool = False):
         super().__init__()
         self.block_attn_only = block_attn_only
@@ -193,7 +194,7 @@ class NativeBlockSparseAttention(nn.Module):
             q = self.q_rope(q)
             k = self.k_rope(k)
 
-        output = nbsa_func(
+        output = mosaic_attn_func(
             q=q, k=k, v=v,
             weight_ba_cmp_slc=strategy_weights,
             block_attn_size=self.block_attn_size,
@@ -208,14 +209,14 @@ class NativeBlockSparseAttention(nn.Module):
         return output
 
 
-class NSABlock(nn.Module):
+class MosaicBlock(nn.Module):
     def __init__(self, config, block_attn_only: bool, no_compression: bool = False):
         super().__init__()
         dim = config.dim
         noise_dim = config.noise_dim
         mlp_ratio = config.mlp_ratio
 
-        self.attention = NativeBlockSparseAttention(config, block_attn_only, no_compression)
+        self.attention = MosaicAttention(config, block_attn_only, no_compression)
         self.norm1 = RMSNorm(dim, elementwise_affine=config.rmsnorm_elementwise_affine)
         self.norm2 = RMSNorm(dim, elementwise_affine=config.rmsnorm_elementwise_affine)
         self.ffn = cSwiGLU(dim, int(dim * mlp_ratio), noise_dim)

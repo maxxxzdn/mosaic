@@ -1,4 +1,4 @@
-# Variable names and pressure levels for the U-NBSA weather forecasting model.
+# Variable names and pressure levels for the Mosaic weather forecasting model.
 
 SL_VARS: list[str] = [
     "2m_temperature",

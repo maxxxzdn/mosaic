@@ -1,9 +1,10 @@
 """
-U-Net Native Block Sparse Attention (Mosaic) for weather forecasting.
+Mosaic: U-Net transformer with block-sparse attention for weather forecasting.
 
 Architecture:
 - Cross-attention interpolation between lon/lat and HEALPix grids
-- Native block sparse attention with encoder-bottleneck-decoder structure
+- Block-sparse attention (local block + compressed + top-k selection branches)
+  arranged in a U-Net encoder–bottleneck–decoder
 - Probabilistic training with noise injection
 """
 
@@ -16,7 +17,7 @@ from torch.nn import RMSNorm
 
 from utils import get_healpix_grid, rad_to_xyz
 from primitives import (
-    NSABlock as _NSABlock,
+    MosaicBlock as _MosaicBlock,
     CrossAttentionInterpolate,
     NoiseGenerator,
     HEALPixDownsample,
@@ -55,14 +56,14 @@ class BottleneckConfig:
 
 @dataclass
 class ModelConfig:
-    """Configuration for the U-NBSA model."""
+    """Configuration for the Mosaic model."""
     dim: int
     num_heads: int
     k_neighbors: int
     qk_norm: bool
     rope: bool
     rope_theta: int
-    nsa_every: int
+    sparse_every: int
     variables: list[str]
     static_variables: list[str]
     qkv_compress_ratio: int
@@ -77,7 +78,7 @@ class ModelConfig:
 
 @dataclass
 class _MergedStageConfig:
-    """Merges ModelConfig and StageConfig for compatibility with NSABlock."""
+    """Merges ModelConfig and StageConfig for compatibility with MosaicBlock."""
     dim: int
     num_heads: int
     block_attn_size: int
@@ -109,8 +110,8 @@ def _merge_configs(config: ModelConfig, stage_cfg) -> _MergedStageConfig:
     )
 
 
-def _make_nsa_block(config: ModelConfig, stage_cfg, block_attn_only: bool) -> _NSABlock:
-    return _NSABlock(_merge_configs(config, stage_cfg), block_attn_only, no_compression=config.no_compression)
+def _make_mosaic_block(config: ModelConfig, stage_cfg, block_attn_only: bool) -> _MosaicBlock:
+    return _MosaicBlock(_merge_configs(config, stage_cfg), block_attn_only, no_compression=config.no_compression)
 
 
 class UNetStage(nn.Module):
@@ -118,10 +119,10 @@ class UNetStage(nn.Module):
         super().__init__()
         self.nside = stage_cfg.nside
         self.blocks = nn.ModuleList([
-            _make_nsa_block(
+            _make_mosaic_block(
                 config=config,
                 stage_cfg=stage_cfg,
-                block_attn_only=(config.nsa_every <= 0) or not (i % config.nsa_every == 0),
+                block_attn_only=(config.sparse_every <= 0) or not (i % config.sparse_every == 0),
             )
             for i in range(depth)
         ])

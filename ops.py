@@ -22,7 +22,7 @@ def get_autotuning_configs(q_tile_sizes: list):
     key=['seq_len', 'feature_dim'],
 )
 @triton.jit
-def block_nsa_forward_kernel(
+def mosaic_attn_fwd_kernel(
     q_ptr, k_ptr, v_ptr, output_ptr, lse_ptr, block_indices_ptr,
     softmax_scale: tl.constexpr,
     seq_len: tl.constexpr,
@@ -134,7 +134,7 @@ def block_nsa_forward_kernel(
     tl.store(lse_base_ptr, log_sum_exp.to(tl.float32))
 
 
-def block_nsa_forward(
+def mosaic_attn_fwd(
     q: torch.Tensor,
     k: torch.Tensor,
     v: torch.Tensor,
@@ -156,7 +156,7 @@ def block_nsa_forward(
         batch_size * num_kv_heads
     )
 
-    block_nsa_forward_kernel[grid](
+    mosaic_attn_fwd_kernel[grid](
         q_ptr = q,
         k_ptr = k,
         v_ptr = v,
@@ -181,7 +181,7 @@ def block_nsa_forward(
     key=['seq_len', 'feature_dim'],
 )
 @triton.jit
-def block_nsa_backward_q_gradient_kernel(
+def mosaic_attn_bwd_q_kernel(
     q_ptr, k_ptr, v_ptr, lse_ptr, delta_ptr, grad_o_ptr, grad_q_ptr, block_indices_ptr,
     softmax_scale: tl.constexpr,
     seq_len: tl.constexpr,
@@ -276,7 +276,7 @@ def block_nsa_backward_q_gradient_kernel(
 
 @torch.compile
 @torch.no_grad()
-def block_nsa_block_mask(
+def mosaic_block_mask(
     block_indices: torch.LongTensor,
 ):
     batch_size, num_blocks, num_heads, _ = block_indices.shape
@@ -302,7 +302,7 @@ def block_nsa_block_mask(
     key=['seq_len', 'feature_dim'],
 )
 @triton.jit
-def block_nsa_backward_kv_gradient_kernel(
+def mosaic_attn_bwd_kv_kernel(
     q_ptr, k_ptr, v_ptr, lse_ptr, delta_ptr,
     grad_o_ptr, grad_k_ptr, grad_v_ptr,
     block_mask_ptr,
@@ -433,7 +433,7 @@ def block_nsa_backward_kv_gradient_kernel(
     tl.store(grad_v_ptr, grad_v_accum.to(grad_v_ptr.dtype.element_ty))
 
 
-def block_nsa_backward(
+def mosaic_attn_bwd(
     q: torch.Tensor,
     k: torch.Tensor,
     v: torch.Tensor,
@@ -454,7 +454,7 @@ def block_nsa_backward(
     grad_k = torch.empty_like(k)
     grad_v = torch.empty_like(v)
 
-    block_mask = block_nsa_block_mask(block_indices)
+    block_mask = mosaic_block_mask(block_indices)
 
     delta = (output * grad_o).sum(dim=-1)
 
@@ -464,7 +464,7 @@ def block_nsa_backward(
         batch_size * num_kv_heads
     )
 
-    block_nsa_backward_q_gradient_kernel[grid_dq](
+    mosaic_attn_bwd_q_kernel[grid_dq](
         q_ptr=q,
         k_ptr=k,
         v_ptr=v,
@@ -485,7 +485,7 @@ def block_nsa_backward(
 
     grid_dkv = (num_blocks_in_seq, batch_size * num_kv_heads)
 
-    block_nsa_backward_kv_gradient_kernel[grid_dkv](
+    mosaic_attn_bwd_kv_kernel[grid_dkv](
         q_ptr=q,
         k_ptr=k,
         v_ptr=v,
@@ -507,7 +507,7 @@ def block_nsa_backward(
     return grad_q, grad_k, grad_v
 
 
-class BlockNSAFunction(torch.autograd.Function):
+class MosaicAttnFunction(torch.autograd.Function):
 
     @staticmethod
     @torch.amp.custom_fwd(device_type='cuda')
@@ -524,7 +524,7 @@ class BlockNSAFunction(torch.autograd.Function):
 
         ctx.dtype = q.dtype
 
-        output, lse = block_nsa_forward(
+        output, lse = mosaic_attn_fwd(
             q=q, k=k, v=v,
             block_indices=block_indices,
             block_size=block_size,
@@ -545,7 +545,7 @@ class BlockNSAFunction(torch.autograd.Function):
     ):
         q, k, v, output, lse, block_indices = ctx.saved_tensors
         grad_o = grad_o.contiguous()
-        grad_q, grad_k, grad_v = block_nsa_backward(
+        grad_q, grad_k, grad_v = mosaic_attn_bwd(
             q=q, k=k, v=v, output=output, lse=lse, grad_o=grad_o,
             softmax_scale=ctx.softmax_scale,
             block_indices=block_indices,
@@ -554,7 +554,7 @@ class BlockNSAFunction(torch.autograd.Function):
         return grad_q, grad_k, grad_v, None, None, None
 
 
-def native_block_sparse_attention(
+def mosaic_sparse_attn(
     q: torch.Tensor,
     k: torch.Tensor,
     v: torch.Tensor,
@@ -563,4 +563,4 @@ def native_block_sparse_attention(
     softmax_scale: float = None,
 ):
     softmax_scale = q.shape[-1] ** -0.5 if softmax_scale is None else softmax_scale
-    return BlockNSAFunction.apply(q, k, v, block_indices, block_size, softmax_scale)
+    return MosaicAttnFunction.apply(q, k, v, block_indices, block_size, softmax_scale)
