@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="figures_weather/mosaic_header.jpg" alt="Mosaic" width="70%">
+</p>
+
 # Mosaic — Block-Sparse Attention for Weather Forecasting
 
 |  📄 [**Paper**](https://arxiv.org/abs/2604.16429)  |  🤗 [**Hugging Face**](https://huggingface.co/maxxxzdn/mosaic)  |  💻 [**GitHub**](https://github.com/maxxxzdn/mosaic)  |
