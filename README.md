@@ -100,7 +100,7 @@ pip install gcsfs
 
 ## Getting the weights
 
-If you installed via Hugging Face (`huggingface-cli download maxxxzdn/mosaic --local-dir .`), the checkpoints (`era5_best.pt`, `hres_best.pt`) and normalization stats are already bundled and `inference.py` finds them in the working directory.
+If you installed via Hugging Face (`huggingface-cli download maxxxzdn/mosaic --local-dir .`), the checkpoints (`checkpoints/era5_best.pt`, `checkpoints/hres_best.pt`) and normalization stats (`data/*.npz`) are already in place and `inference.py` finds them automatically.
 
 If you cloned this repo from GitHub instead, the weights are not in the git tree (they live on the [Hugging Face mirror](https://huggingface.co/maxxxzdn/mosaic) as LFS objects). Fetch them with:
 
@@ -196,11 +196,11 @@ gs://weatherbench2/datasets/hres_t0/2016-2022-6h-240x121_equiangular_with_poles_
 | `base.py` | `WeatherModel` wrapper |
 | `config.py` | Variable / level definitions |
 | `dataset.py` | Metadata dataclasses |
-| `norm_stats_era5.npz` | Normalization statistics for the `era5` variant |
-| `norm_stats_hres.npz` | Normalization statistics for the `hres` variant |
-| `static_vars.npz` | Static fields (orography, land–sea mask, soil type) — shared between variants |
-| `era5_best.pt` | Trained checkpoint, `era5` variant (~1.7 GB) |
-| `hres_best.pt` | Trained checkpoint, `hres` variant (~1.7 GB) |
+| `data/norm_stats_era5.npz` | Normalization statistics for the `era5` variant |
+| `data/norm_stats_hres.npz` | Normalization statistics for the `hres` variant |
+| `data/static_vars.npz` | Static fields (orography, land–sea mask, soil type) — shared between variants |
+| `checkpoints/era5_best.pt` | Trained checkpoint, `era5` variant (~1.7 GB) — Hugging Face only |
+| `checkpoints/hres_best.pt` | Trained checkpoint, `hres` variant (~1.7 GB) — Hugging Face only |
 | `figures_weather/` | Figures from the paper |
 
 ## Limitations

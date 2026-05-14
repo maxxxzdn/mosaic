@@ -102,15 +102,15 @@ class Preset:
 PRESETS = {
     "era5": Preset(
         step_stride=4, num_history_steps=2, k_neighbors=24,
-        default_checkpoint="era5_best.pt",
-        default_norm_stats="norm_stats_era5.npz",
+        default_checkpoint="checkpoints/era5_best.pt",
+        default_norm_stats="data/norm_stats_era5.npz",
         stage_cfgs=_STAGE_CFGS_COMMON,
         bottleneck_cfg=_BOTTLENECK_CFG_COMMON,
     ),
     "hres": Preset(
         step_stride=1, num_history_steps=4, k_neighbors=20,
-        default_checkpoint="hres_best.pt",
-        default_norm_stats="norm_stats_hres.npz",
+        default_checkpoint="checkpoints/hres_best.pt",
+        default_norm_stats="data/norm_stats_hres.npz",
         stage_cfgs=_STAGE_CFGS_COMMON,
         bottleneck_cfg=_BOTTLENECK_CFG_COMMON,
     ),
@@ -247,8 +247,8 @@ def build_model(
     longitude: np.ndarray,
     latitude: np.ndarray,
     preset: Preset,
-    norm_stats_path: str = "norm_stats.npz",
-    static_vars_path: str = "static_vars.npz",
+    norm_stats_path: str = "data/norm_stats_era5.npz",
+    static_vars_path: str = "data/static_vars.npz",
     device: str = "cuda",
 ):
     """Build and return the WeatherModel with loaded checkpoint and metadata."""
@@ -412,8 +412,8 @@ def main():
                         help="Output file path (default: forecast.npz)")
     parser.add_argument("--norm-stats", type=str, default=None,
                         help="Path to norm_stats .npz. Default: preset's default_norm_stats")
-    parser.add_argument("--static-vars", type=str, default="static_vars.npz",
-                        help="Path to static_vars.npz (default: static_vars.npz in current dir)")
+    parser.add_argument("--static-vars", type=str, default="data/static_vars.npz",
+                        help="Path to static_vars.npz (default: data/static_vars.npz)")
     parser.add_argument("--k-neighbors", type=int, default=None,
                         help="Override preset's k_neighbors (advanced — for ablation only)")
     parser.add_argument("--no-compile", action="store_true",

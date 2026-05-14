@@ -9,9 +9,9 @@ build/
 
 # Model checkpoints are not stored in git — fetch from Hugging Face
 # (huggingface.co/maxxxzdn/mosaic) instead. On HF they live as LFS objects.
-*.pt
-*.pth
-*.ckpt
+checkpoints/*.pt
+checkpoints/*.pth
+checkpoints/*.ckpt
 
 # Generated forecast outputs (kept out of git but bundled .npz assets are tracked)
 verify_*.npz
