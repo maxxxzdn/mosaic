@@ -1,23 +1,13 @@
----
-license: cc-by-nc-4.0
-library_name: pytorch
-tags:
-- weather
-- weather-forecasting
-- climate
-- atmospheric-science
-- sparse-attention
-- transformer
-- probabilistic-forecasting
----
-
 # Mosaic — Block-Sparse Attention for Weather Forecasting
 
-**Mosaic** is a probabilistic weather forecasting model that operates on native-resolution grids via mesh-aligned block-sparse attention. At 1.5° resolution with 214M parameters, Mosaic matches or outperforms models trained on 6× finer resolution on key variables, and individual ensemble members exhibit near-perfect spectral alignment across all resolved frequencies. A 24-member, 10-day forecast takes under 12 s on a single H100 GPU.
+|  📄 [**Paper**](https://arxiv.org/abs/2604.16429)  |  🤗 [**Hugging Face**](https://huggingface.co/maxxxzdn/mosaic)  |  💻 [**GitHub**](https://github.com/maxxxzdn/mosaic)  |
+| :---: | :---: | :---: |
+| ICML 2026 · arXiv:2604.16429 | Pretrained weights & model card | Source code & issue tracker |
 
 > **(Sparse) Attention to the Details: Preserving Spectral Fidelity in ML-based Weather Forecasting Models** \
-> Maksim Zhdanov, Ana Lucic, Max Welling, Jan-Willem van de Meent \
-> *ICML 2026* · [arXiv:2604.16429](https://arxiv.org/abs/2604.16429) · [GitHub](https://github.com/maxxxzdn/mosaic)
+> Maksim Zhdanov, Ana Lucic, Max Welling, Jan-Willem van de Meent · *ICML 2026*
+
+**Mosaic** is a probabilistic weather forecasting model that operates on native-resolution grids via mesh-aligned block-sparse attention. At 1.5° resolution with 214M parameters, Mosaic matches or outperforms models trained on 6× finer resolution on key variables, and individual ensemble members exhibit near-perfect spectral alignment across all resolved frequencies. A 24-member, 10-day forecast takes under 12 s on a single H100 GPU.
 
 ![Spectral fidelity and skill–speed Pareto](figures_weather/results_spectra_pareto.jpg)
 
@@ -234,3 +224,11 @@ Released under [CC-BY-NC-4.0](https://creativecommons.org/licenses/by-nc/4.0/). 
 ## Acknowledgements
 
 MZ acknowledges support from Microsoft Research AI4Science. JWvdM acknowledges support from the European Union Horizon Framework Programme (Grant agreement ID: 101120237). This work used the Dutch national e-infrastructure with the support of the SURF Cooperative using grant no. EINF-16923. Computations were partially performed using the UvA/FNWI HPC Facility.
+
+## Model card metadata
+
+| Field         | Value |
+|---------------|-------|
+| License       | [`cc-by-nc-4.0`](https://creativecommons.org/licenses/by-nc/4.0/) |
+| Library       | `pytorch` |
+| Tags          | `weather` · `weather-forecasting` · `climate` · `atmospheric-science` · `sparse-attention` · `transformer` · `probabilistic-forecasting` |
