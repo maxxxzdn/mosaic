@@ -4,9 +4,9 @@
 
 # Mosaic — Block-Sparse Attention for Weather Forecasting
 
-|  📄 [**Paper**](https://arxiv.org/abs/2604.16429)  |  🤗 [**Hugging Face**](https://huggingface.co/maxxxzdn/mosaic)  |  💻 [**GitHub**](https://github.com/maxxxzdn/mosaic)  |
-| :---: | :---: | :---: |
-| ICML 2026 · arXiv:2604.16429 | Pretrained weights & model card | Source code & issue tracker |
+|  📄 [**Paper**](https://arxiv.org/abs/2604.16429)  |  🌐 [**Live Demo**](https://maxxxzdn-mosaic.static.hf.space/)  |  🤗 [**Hugging Face**](https://huggingface.co/maxxxzdn/mosaic)  |  💻 [**GitHub**](https://github.com/maxxxzdn/mosaic)  |
+| :---: | :---: | :---: | :---: |
+| ICML 2026 · arXiv:2604.16429 | Interactive forecasts & spectra | Pretrained weights & model card | Source code & issue tracker |
 
 > **(Sparse) Attention to the Details: Preserving Spectral Fidelity in ML-based Weather Forecasting Models** \
 > Maksim Zhdanov, Ana Lucic, Max Welling, Jan-Willem van de Meent · *ICML 2026*
@@ -14,6 +14,16 @@
 **Mosaic** is a probabilistic weather forecasting model that operates on native-resolution grids via mesh-aligned block-sparse attention. At 1.5° resolution with 214M parameters, Mosaic matches or outperforms models trained on 6× finer resolution on key variables, and individual ensemble members exhibit near-perfect spectral alignment across all resolved frequencies. A 24-member, 10-day forecast takes under 12 s on a single H100 GPU.
 
 ![Spectral fidelity and skill–speed Pareto](figures_weather/results_spectra_pareto.jpg)
+
+## Interactive Demo
+
+<p align="center">
+  <a href="https://maxxxzdn-mosaic.static.hf.space/">
+    <img src="figures_weather/demo_preview.jpg" alt="Mosaic interactive demo" width="85%">
+  </a>
+</p>
+
+[**▶ Explore forecasts in your browser**](https://maxxxzdn-mosaic.static.hf.space/) — rotate the globe, step through a 10-day 16-member ensemble forecast, switch variables, and watch each member's kinetic-energy spectrum track ERA5 in real time.
 
 ## TL;DR
 
@@ -66,7 +76,7 @@ Grouped-Query Attention with ratio 4 (3 KV heads per stage), 2D RoPE on (longitu
 
 ## Results
 
-Headline plot is at the top of this page: individual ensemble members preserve realistic kinetic-energy spectra (left, 1.5°; centre, 0.25°), and Mosaic sits on the favourable end of the skill–speed–memory Pareto (right). All metrics computed at 240 h lead time, 720 initial conditions throughout the 2020 test year (1.5° benchmark) and a single 6 h forecast (0.25° benchmark).
+The headline figure at the top of the page summarizes the main result: individual ensemble members preserve realistic kinetic-energy spectra (left, 1.5°; centre, 0.25°), and Mosaic sits on the favourable end of the skill–speed–memory Pareto (right). You can explore the same forecasts and spectra interactively in the [live demo](https://maxxxzdn-mosaic.static.hf.space/). All metrics computed at 240 h lead time, 720 initial conditions throughout the 2020 test year (1.5° benchmark) and a single 6 h forecast (0.25° benchmark).
 
 On the 0.25° HRES benchmark, Mosaic competes with state-of-the-art 0.25° models despite operating at 1.5°:
 
